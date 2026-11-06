@@ -9,6 +9,7 @@ PulseWatch checks endpoints, records HTTP status and latency, outputs machine-re
 - HTTPS endpoint checks with configurable timeout (up to 30 seconds)
 - Response-time measurement and UTC timestamps
 - JSON Lines history output for later analysis
+- Historical uptime and latency summaries with `--summary`
 - Exit codes suitable for scripts and scheduled checks
 - Unit tests with mocked network responses
 - GitHub Actions test matrix for Python 3.11, 3.12 and 3.13
@@ -25,6 +26,7 @@ Requires Python 3.11+.
 ```bash
 python pulsewatch.py https://example.com
 python pulsewatch.py https://example.com https://www.python.org --timeout 8 --output history.jsonl
+python pulsewatch.py --summary history.jsonl
 ```
 
 Example output (illustrative):
@@ -56,7 +58,7 @@ An HTTP 2xx or 3xx response is considered up; other statuses and network errors 
 - HTTPS port 443 only; embedded URL credentials and fragments are rejected.
 - Query strings can contain secrets and are included in JSON output. Use clean monitoring URLs without tokens.
 - Each invocation performs a single check; schedule externally if you need recurring checks.
-- No alert delivery, dashboards, persistent database or uptime SLA calculation yet.
+- The included dashboard is a local history viewer, not a live monitoring service. No alert delivery, persistent database or time-weighted uptime SLA calculation yet.
 - Tests use mocks; the CI workflow does not prove availability of live external websites.
 
 ## Roadmap
@@ -64,7 +66,8 @@ An HTTP 2xx or 3xx response is considered up; other statuses and network errors 
 - [x] Add a local HTML dashboard for JSONL history.
 - [ ] Add configurable alert thresholds and opt-in notifications.
 - [ ] Add DNS/IP validation for a secure hosted mode.
-- [ ] Add CSV export and uptime statistics.
+- [x] Add sample-based uptime and latency statistics from JSONL history.
+- [ ] Add CSV export.
 
 ## License
 
