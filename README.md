@@ -10,6 +10,7 @@ PulseWatch checks endpoints, records HTTP status and latency, outputs machine-re
 - Response-time measurement and UTC timestamps
 - JSON Lines history output for later analysis
 - Historical uptime and latency summaries with `--summary`
+- Continuous monitoring with `--watch`, adjustable intervals and console alerts on outages/recovery
 - Exit codes suitable for scripts and scheduled checks
 - Unit tests with mocked network responses
 - GitHub Actions test matrix for Python 3.11, 3.12 and 3.13
@@ -27,6 +28,8 @@ Requires Python 3.11+.
 python pulsewatch.py https://example.com
 python pulsewatch.py https://example.com https://www.python.org --timeout 8 --output history.jsonl
 python pulsewatch.py --summary history.jsonl
+python pulsewatch.py https://example.com --watch --interval 60 --alert-after 2 --output history.jsonl
+python pulsewatch.py https://example.com --watch --interval 5 --cycles 3
 ```
 
 Example output (illustrative):
@@ -40,6 +43,10 @@ Run tests:
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Watch mode and alerts
+
+Run with `--watch` to check endpoints repeatedly (default: every 60 seconds) until you press **Ctrl+C**. Use `--cycles N` for a finite run. The minimum interval is 5 seconds. The program prints a **DOWN** alert once after two consecutive failures by default (`--alert-after 2`) and a **RECOVERED** alert after the endpoint responds successfully again. These are **console messages only**: no email, SMS, or webhook is sent. Alerts reset when the process restarts; there is no background service. Use `--output history.jsonl` to persist results for the dashboard.
 
 ## How it works
 
@@ -57,14 +64,15 @@ An HTTP 2xx or 3xx response is considered up; other statuses and network errors 
 - Private, loopback and reserved IP **literals** are rejected by default. **Hostname DNS resolution is not screened** for private IP addresses, so this is **not safe for untrusted URL submission** or deployment as a public web service.
 - HTTPS port 443 only; embedded URL credentials and fragments are rejected.
 - Query strings can contain secrets and are included in JSON output. Use clean monitoring URLs without tokens.
-- Each invocation performs a single check; schedule externally if you need recurring checks.
+- By default, each invocation performs one check; `--watch` runs recurring checks only while the process remains active.
 - The included dashboard is a local history viewer, not a live monitoring service. No alert delivery, persistent database or time-weighted uptime SLA calculation yet.
 - Tests use mocks; the CI workflow does not prove availability of live external websites.
 
 ## Roadmap
 
 - [x] Add a local HTML dashboard for JSONL history.
-- [ ] Add configurable alert thresholds and opt-in notifications.
+- [x] Add configurable consecutive-failure thresholds and console alerts.
+- [ ] Add opt-in external notifications (email or webhook).
 - [ ] Add DNS/IP validation for a secure hosted mode.
 - [x] Add sample-based uptime and latency statistics from JSONL history.
 - [ ] Add CSV export.
