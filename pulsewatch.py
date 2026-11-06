@@ -15,6 +15,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from ipaddress import ip_address
 from pathlib import Path
+from statistics import summarize
 
 USER_AGENT = "PulseWatch/1.0 (+portfolio uptime monitor)"
 
@@ -82,10 +83,22 @@ def check(url: str, timeout: float = 5.0) -> CheckResult:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Monitor HTTPS endpoints you own or are authorized to test.")
-    parser.add_argument("urls", nargs="+", help="HTTPS endpoint URLs")
+    parser.add_argument("urls", nargs="*", help="HTTPS endpoint URLs")
+    parser.add_argument("--summary", type=Path, help="Summarize a previously recorded JSONL history file")
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--output", type=Path, help="Append JSON Lines results to a local file")
     args = parser.parse_args(argv)
+    if args.summary is not None:
+        if args.urls or args.output:
+            parser.error("--summary cannot be combined with URLs or --output")
+        try:
+            report = summarize(args.summary)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(report, indent=2))
+        return 0
+    if not args.urls:
+        parser.error("provide one or more URLs, or use --summary")
     try:
         results = [check(url, args.timeout) for url in args.urls]
     except ValueError as exc:
