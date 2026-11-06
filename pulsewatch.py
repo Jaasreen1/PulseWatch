@@ -86,6 +86,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("urls", nargs="*", help="HTTPS endpoint URLs")
     parser.add_argument("--summary", type=Path, help="Summarize a previously recorded JSONL history file")
     parser.add_argument("--timeout", type=float, default=5.0)
+    parser.add_argument("--watch", action="store_true", help="Run repeated checks until Ctrl+C")
+    parser.add_argument("--interval", type=float, default=60, help="Seconds between cycles")
+    parser.add_argument("--cycles", type=int, default=0, help="Stop after N cycles (0: unlimited)")
+    parser.add_argument("--alert-after", type=int, default=2, help="Consecutive failures before DOWN alert")
     parser.add_argument("--output", type=Path, help="Append JSON Lines results to a local file")
     args = parser.parse_args(argv)
     if args.summary is not None:
@@ -99,6 +103,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if not args.urls:
         parser.error("provide one or more URLs, or use --summary")
+    if args.watch:
+        from monitor import monitor
+        try:
+            for url in args.urls:
+                validate_url(url)
+            monitor(args.urls, interval=args.interval, cycles=args.cycles,
+                    timeout=args.timeout, alert_after=args.alert_after,
+                    output=args.output)
+        except ValueError as exc:
+            parser.error(str(exc))
+        except KeyboardInterrupt:
+            print("Monitoring stopped.", file=sys.stderr)
+        return 0
     try:
         results = [check(url, args.timeout) for url in args.urls]
     except ValueError as exc:
