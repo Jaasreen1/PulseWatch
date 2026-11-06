@@ -14,6 +14,10 @@ PulseWatch checks endpoints, records HTTP status and latency, outputs machine-re
 - GitHub Actions test matrix for Python 3.11, 3.12 and 3.13
 - No third-party dependencies or API keys
 
+## Dashboard
+
+Open [`dashboard.html`](./dashboard.html) in a modern browser. Click **Load demo** for synthetic example data, or import a JSONL file created by the CLI using `--output history.jsonl`. The dashboard runs entirely in your browser; imported data is not uploaded to a server. The dashboard is a history viewer, not a live polling service.
+
 ## Quick start
 
 Requires Python 3.11+.
@@ -57,7 +61,7 @@ An HTTP 2xx or 3xx response is considered up; other statuses and network errors 
 
 ## Roadmap
 
-- [ ] Add a local HTML dashboard for JSONL history.
+- [x] Add a local HTML dashboard for JSONL history.
 - [ ] Add configurable alert thresholds and opt-in notifications.
 - [ ] Add DNS/IP validation for a secure hosted mode.
 - [ ] Add CSV export and uptime statistics.
